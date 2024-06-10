@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <input type="file" id="qr-input-file" accept="image/*">
+
+    <div id="reader" width="600px" height="600px"></div>
+
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <script>
+        const html5QrCode = new Html5Qrcode("reader");
+
+        // File based scanning
+        const fileInput = document.getElementById('qr-input-file');
+        fileInput.addEventListener('change', handleFileChange);
+
+        function handleFileChange(e) {
+            if (e.target.files.length === 0) {
+                // No file selected, ignore 
+                return;
+            }
+
+            const imageFile = e.target.files[0];
+            // Scan QR Code
+            html5QrCode.scanFile(imageFile, true)
+                .then(decodedText => {
+                    // success, use decodedText
+                    postData(decodedText);
+                    console.log(decodedText);
+                })
+                .catch(err => {
+                    // failure, handle it.
+                    console.log(`Error scanning file. Reason: ${err}`)
+                });
+        }
+
+        function postData(decodedText) {
+            fetch('http://localhost:3001/log', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ data: decodedText })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>
